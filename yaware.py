@@ -1,7 +1,9 @@
 #!/usr/bin/python
 
 import subprocess
-import time, string, md5
+import ConfigParser
+import time, string, md5, sys
+from sqlobject import *
 
 def GetActiveWindow():
     result = {}
@@ -24,6 +26,28 @@ def GetActiveWindow():
                 result['WM_COMMAND'] = line.split('=')[1].strip()
 
     return  time.time(), result['id'], md5.md5(str(result)).hexdigest(), result
+
+try:
+    config = ConfigParser.ConfigParser()
+    config.read('config.ini')
+    dsn = config.get('SQL', 'dsn')
+except:
+    print 'config not found'
+    sys.exit()
+
+class YawareEvent(SQLObject):
+    added=DateTimeCol(default=sqlbuilder.func.NOW())
+    event = StringCol()
+    uniqueid = StringCol(default=None)
+    raw = StringCol(default=None)
+
+connection = connectionForURI(dsn)
+sqlhub.processConnection = connection
+
+try:
+    YawareEvent.createTable()
+except:
+    pass
 
 while True:
     time.sleep(1.9)
