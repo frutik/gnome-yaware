@@ -36,10 +36,10 @@ except:
     sys.exit()
 
 class YawareEvent(SQLObject):
-    added=DateTimeCol(default=sqlbuilder.func.NOW())
-    event = StringCol()
-    uniqueid = StringCol(default=None)
-    raw = StringCol(default=None)
+    added = StringCol()
+    windowid = StringCol()
+    windowhash = StringCol()
+    raw = StringCol()
 
 connection = connectionForURI(dsn)
 sqlhub.processConnection = connection
@@ -51,4 +51,7 @@ except:
 
 while True:
     time.sleep(1.9)
-    print GetActiveWindow()
+    row = GetActiveWindow()
+    YawareEvent(added = row[0], windowid = row[1], windowhash = row[2], raw = str(row[3]))
+    
+    
