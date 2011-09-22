@@ -10,19 +10,25 @@ import logging
 
 from optparse import OptionParser
 
+log_levels = {
+    'INFO': logging.INFO,
+    'DEBUG': logging.DEBUG,
+}
+
 cmd_options_parser = OptionParser()
-cmd_options_parser.add_option("--debug", dest="is_debug", help="Run in debug mode", default=False)
+cmd_options_parser.add_option("--loglevel", dest="log_level", help="Log level", default='INFO')
 cmd_options_parser.add_option("--config", dest="config_file", help="Config file", default="config.ini")
 
 (cmd_options, args) = cmd_options_parser.parse_args()
 
-DEBUG = cmd_options.is_debug
+LOG_LEVEL = cmd_options.log_level
 CONFIG_FILE = cmd_options.config_file
 
-if DEBUG:
-    logging.basicConfig(level=logging.DEBUG)
-else:
-    logging.basicConfig(level=logging.INFO)
+try:
+    logging.basicConfig(level=log_levels[LOG_LEVEL])
+except:
+    print 'valid loglevels are:', log_levels.keys()
+    sys.exit()
 
 def GetActiveWindow():
     result = {}
