@@ -1,9 +1,28 @@
 #!/usr/bin/python
 
+#TODO owning user? previous windows id?
+
 import subprocess
 import ConfigParser
 import time, string, md5, sys
 from sqlobject import *
+import logging
+
+from optparse import OptionParser
+
+cmd_options_parser = OptionParser()
+cmd_options_parser.add_option("--debug", dest="is_debug", help="Run in debug mode", default=False)
+cmd_options_parser.add_option("--config", dest="config_file", help="Config file", default="config.ini")
+
+(cmd_options, args) = cmd_options_parser.parse_args()
+
+DEBUG = cmd_options.is_debug
+CONFIG_FILE = cmd_options.config_file
+
+if DEBUG:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
 
 def GetActiveWindow():
     result = {}
@@ -15,7 +34,7 @@ def GetActiveWindow():
         for line in  lines:
             line = line.strip()
             if line.find('WM_CLIENT_LEADER') == 0:
-                result['WM_CLIENT_LEADER'] = line.split('#')[1]
+                result['WM_CLIENT_LEADER'] = line.split('#')[1].strip()
             elif line.find('WM_NAME') == 0:
                 result['WM_NAME'] = line.split('=')[1].strip()
             elif line.find('WM_CLASS') == 0:
@@ -29,8 +48,9 @@ def GetActiveWindow():
 
 try:
     config = ConfigParser.ConfigParser()
-    config.read('config.ini')
+    config.read(CONFIG_FILE)
     dsn = config.get('SQL', 'dsn')
+    sleep_time = float(config.get('GENERAL', 'sleep'))
 except:
     print 'config not found'
     sys.exit()
@@ -39,7 +59,11 @@ class YawareEvent(SQLObject):
     added = StringCol()
     windowid = StringCol()
     windowhash = StringCol()
-    raw = StringCol()
+    WM_CLIENT_LEADER = StringCol()
+    WM_NAME = StringCol()
+    WM_CLASS = StringCol()
+    WM_CLIENT_MACHINE = StringCol()
+
 
 connection = connectionForURI(dsn)
 sqlhub.processConnection = connection
@@ -50,8 +74,19 @@ except:
     pass
 
 while True:
-    time.sleep(1.9)
+    time.sleep(sleep_time)
     row = GetActiveWindow()
-    YawareEvent(added = row[0], windowid = row[1], windowhash = row[2], raw = str(row[3]))
+    
+    logging.debug(row)
+    
+    YawareEvent(
+	added = row[0], 
+	windowid = row[1], 
+	windowhash = row[2], 
+	WM_CLIENT_LEADER = row[3]['WM_CLIENT_LEADER'],
+	WM_NAME = row[3]['WM_NAME'],
+	WM_CLASS = row[3]['WM_CLASS'],
+	WM_CLIENT_MACHINE = row[3]['WM_CLIENT_MACHINE'],
+    )
     
     
