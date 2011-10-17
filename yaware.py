@@ -84,15 +84,51 @@ while True:
     row = GetActiveWindow()
     
     logging.debug(row)
+
+    try:	
+	added = row[0] 
+    except:
+	added = '' 
+
+    try:	
+	windowid = row[1] 
+    except:
+	windowid = '' 
+
+    try:	
+	windowhash = row[2] 
+    except:
+	windowhash = '' 
+
+    try:	
+	WM_CLIENT_LEADER = row[3]['WM_CLIENT_LEADER']
+    except:
+	WM_CLIENT_LEADER = ''
+
+    try:	
+	WM_NAME = row[3]['WM_NAME']
+    except:
+	WM_NAME = ''
+
+    try:	
+	WM_CLASS = row[3]['WM_CLASS']
+    except:
+	WM_CLASS = ''
+
+    try:	
+	WM_CLIENT_MACHINE = row[3]['WM_CLIENT_MACHINE']
+    except:
+	WM_CLIENT_MACHINE = ''
+
     
     YawareEvent(
-	added = row[0], 
-	windowid = row[1], 
-	windowhash = row[2], 
-	WM_CLIENT_LEADER = row[3]['WM_CLIENT_LEADER'],
-	WM_NAME = row[3]['WM_NAME'],
-	WM_CLASS = row[3]['WM_CLASS'],
-	WM_CLIENT_MACHINE = row[3]['WM_CLIENT_MACHINE'],
+	added = added, 
+	windowid = windowid, 
+	windowhash = windowhash, 
+	WM_CLIENT_LEADER = WM_CLIENT_LEADER,
+	WM_NAME = WM_NAME,
+	WM_CLASS = WM_CLASS,
+	WM_CLIENT_MACHINE = WM_CLIENT_MACHINE
     )
     
     
