@@ -52,39 +52,7 @@ def GetActiveWindow():
 
     return  time.time(), result['id'], md5.md5(str(result)).hexdigest(), result
 
-try:
-    config = ConfigParser.ConfigParser()
-    config.read(CONFIG_FILE)
-    dsn = config.get('SQL', 'dsn')
-    sleep_time = float(config.get('GENERAL', 'sleep'))
-except:
-    print 'config not found'
-    sys.exit()
-
-class YawareEvent(SQLObject):
-    added = StringCol()
-    windowid = StringCol()
-    windowhash = StringCol()
-    WM_CLIENT_LEADER = StringCol()
-    WM_NAME = StringCol()
-    WM_CLASS = StringCol()
-    WM_CLIENT_MACHINE = StringCol()
-
-
-connection = connectionForURI(dsn)
-sqlhub.processConnection = connection
-
-try:
-    YawareEvent.createTable()
-except:
-    pass
-
-while True:
-    time.sleep(sleep_time)
-    row = GetActiveWindow()
-    
-    logging.debug(row)
-
+def process_window(row):
     try:	
 	added = row[0] 
     except:
@@ -119,8 +87,7 @@ while True:
 	WM_CLIENT_MACHINE = row[3]['WM_CLIENT_MACHINE']
     except:
 	WM_CLIENT_MACHINE = ''
-
-    
+     
     YawareEvent(
 	added = added, 
 	windowid = windowid, 
@@ -130,5 +97,39 @@ while True:
 	WM_CLASS = WM_CLASS,
 	WM_CLIENT_MACHINE = WM_CLIENT_MACHINE
     )
+
+try:
+    config = ConfigParser.ConfigParser()
+    config.read(CONFIG_FILE)
+    dsn = config.get('SQL', 'dsn')
+    sleep_time = float(config.get('GENERAL', 'sleep'))
+except:
+    print 'config not found'
+    sys.exit()
+
+class YawareEvent(SQLObject):
+    added = StringCol()
+    windowid = StringCol()
+    windowhash = StringCol()
+    WM_CLIENT_LEADER = StringCol()
+    WM_NAME = StringCol()
+    WM_CLASS = StringCol()
+    WM_CLIENT_MACHINE = StringCol()
+
+
+connection = connectionForURI(dsn)
+sqlhub.processConnection = connection
+
+try:
+    YawareEvent.createTable()
+except:
+    pass
+
+while True:
+    time.sleep(sleep_time)
+    row = GetActiveWindow()
     
+    logging.debug(row)
+
+    process_window(row)
     
